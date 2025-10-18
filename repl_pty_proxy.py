@@ -12,7 +12,7 @@ import struct
 import tty
 
 # --- Config ---
-REPL_CMD = [os.environ.get("REPL_BIN", "python3"), "-q"]
+REPL_CMD = [os.environ.get("REPL_BIN", "python3")]
 UDS_PATH = os.environ.get("REPL_UDS", "/tmp/repl.sock")
 LOG_INPUTS_TO = sys.stderr  # where to log intercepted input
 
@@ -79,8 +79,6 @@ def read_client(conn, mask):
         txt = data.decode(errors="replace")
     except Exception:
         txt = repr(data)
-    # print(f"[UDS → REPL] {txt!r}", file=LOG_INPUTS_TO, flush=True)
-    print("wow")
     # Write to REPL pty
     try:
         os.write(master_fd, data)
@@ -144,9 +142,9 @@ def main():
     child_pid, master_fd = pty.fork()
     if child_pid == 0:
         # Child: adjust PTY slave termios so \n → \r\n (fix staggered prompts)
-        try:
-            import termios
-            for fd in (0, 1, 2):  # stdin, stdout, stderr are all on the slave
+        import termios
+        for fd in (0, 1, 2):  # stdin, stdout, stderr are all on the slave
+            try:
                 attrs = termios.tcgetattr(fd)
                 # attrs layout: [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]
                 iflag, oflag, cflag, lflag, ispeed, ospeed, cc = attrs
@@ -163,9 +161,9 @@ def main():
                 attrs[0] = iflag
                 attrs[1] = oflag
                 termios.tcsetattr(fd, termios.TCSANOW, attrs)
-        except Exception:
-            # best-effort; if this fails we still exec the REPL
-            pass
+            except Exception:
+                # best-effort; if this fails we still exec the REPL
+                pass
 
         # Now exec the REPL with the fixed line discipline
         os.execvp(REPL_CMD[0], REPL_CMD)

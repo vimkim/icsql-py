@@ -3,3 +3,7 @@ send:
 
 run:
     uv run repl_pty_proxy.py
+
+pyrepl:
+    uv run pyrepl.py
+

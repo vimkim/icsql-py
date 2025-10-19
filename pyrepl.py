@@ -34,7 +34,8 @@ def main():
     pid, master_fd = pty.fork()
     if pid == 0:
         # Child: attach to PTY as controlling tty and exec python
-        os.execvp("python3", ["python3", "-q"])
+        # os.execvp("python3", ["python3"])
+        os.execvp("csql", ["csql", "-Sudba", "testdb"])
         raise SystemExit(1)
 
     # Parent: bridge FIFO -> PTY (stdin) and PTY -> stdout
